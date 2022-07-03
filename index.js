@@ -18,28 +18,43 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
+
 //========================collections===========================
 async function run() {
   try {
     await client.connect();
+
     const hotelsCollections = client.db("tripia").collection("hotels");
+    const locationsCollections = client.db("tripia").collection("locations");
+
     app.get("/hotels", async (req, res) => {
       const hotels = await hotelsCollections.find().toArray();
-      console.log(hotels);
+
       res.send(hotels);
     });
 
-    app.get('/hotels/:city',async(req,res)=>{
-      const data=req.params.city
-      
-      const filter={location:data}
-      const hotel=await hotelsCollections.find(filter).toArray()
-      res.send(hotel)
-    })
+    app.get("/location", async (req, res) => {
+      const location = await locationsCollections.find().toArray();
+
+      res.send(location);
+    });
+    app.post("/hotel", async (req, res) => {
+      const data = req.body;
+      console.log(data);
+      const insertData = await hotelsCollections.insertOne(data);
+      res.send(insertData);
+    });
+    app.get("/hotels/:city", async (req, res) => {
+      const data = req.params.city;
+      console.log(data);
+      const filter = { upazila: data };
+      const hotel = await hotelsCollections.find(filter).toArray();
+      res.send(hotel);
+    });
   } finally {
   }
 }
 run().catch(console.dir);
 app.listen(port, () => {
-  console.log("server is runnig on port", port);
+  console.log("server is running on port", port);
 });
